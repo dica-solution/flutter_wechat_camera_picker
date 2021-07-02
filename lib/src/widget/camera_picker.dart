@@ -524,6 +524,7 @@ class CameraPickerState extends State<CameraPicker>
 
       try {
         await controller.initialize();
+        await controller.setFlashMode(FlashMode.off);
         Future.wait<void>(<Future<dynamic>>[
           (() async => _maxAvailableExposureOffset =
               await controller.getMaxExposureOffset())(),
@@ -562,11 +563,9 @@ class CameraPickerState extends State<CameraPicker>
     try {
       switch (controller.value.flashMode) {
         case FlashMode.off:
-          await controller.setFlashMode(FlashMode.auto);
+          await controller.setFlashMode(FlashMode.torch);
           break;
         case FlashMode.auto:
-          await controller.setFlashMode(FlashMode.always);
-          break;
         case FlashMode.always:
         case FlashMode.torch:
           await controller.setFlashMode(FlashMode.off);
