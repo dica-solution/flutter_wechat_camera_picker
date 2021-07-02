@@ -500,7 +500,9 @@ class CameraPickerState extends State<CameraPicker>
       // When the [cameraDescription] is null, which means this is the first
       // time initializing cameras, so available cameras should be fetched.
       if (cameraDescription == null) {
-        cameras = await availableCameras();
+        cameras = (await availableCameras())
+            .where((cam) => cam.lensDirection == CameraLensDirection.back)
+            .toList();
       }
 
       // After cameras fetched, judge again with the list is empty or not to

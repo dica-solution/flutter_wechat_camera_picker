@@ -44,7 +44,9 @@ class _MyHomePageState extends State<MyHomePage> {
     final double scale = MediaQuery.of(context).devicePixelRatio;
     final AssetEntity? _entity = await CameraPicker.pickFromCamera(
       context,
-      enableRecording: true,
+      enableRecording: false,
+      enableAudio: false,
+      enablePinchToZoom: false,
     );
     if (_entity != null && entity != _entity) {
       entity = _entity;
