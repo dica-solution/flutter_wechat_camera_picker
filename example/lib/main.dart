@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -47,6 +49,9 @@ class _MyHomePageState extends State<MyHomePage> {
       enableRecording: false,
       enableAudio: false,
       enablePinchToZoom: false,
+      onCameraSaving: (File file) {
+        print(file.path);
+      },
     );
     if (_entity != null && entity != _entity) {
       entity = _entity;

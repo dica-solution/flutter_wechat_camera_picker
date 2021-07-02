@@ -44,6 +44,7 @@ class CameraPicker extends StatefulWidget {
     this.imageFormatGroup = ImageFormatGroup.unknown,
     this.cameraQuarterTurns = 0,
     this.foregroundBuilder,
+    this.onCameraSaving,
     this.onEntitySaving,
     CameraPickerTextDelegate? textDelegate,
   })  : assert(
@@ -120,6 +121,8 @@ class CameraPicker extends StatefulWidget {
   /// 覆盖在相机预览上方的前景构建
   final Widget Function(CameraValue)? foregroundBuilder;
 
+  final void Function(File)? onCameraSaving;
+
   /// {@macro wechat_camera_picker.SaveEntityCallback}
   final EntitySaveCallback? onEntitySaving;
 
@@ -142,6 +145,7 @@ class CameraPicker extends StatefulWidget {
     ResolutionPreset resolutionPreset = ResolutionPreset.max,
     ImageFormatGroup imageFormatGroup = ImageFormatGroup.unknown,
     Widget Function(CameraValue)? foregroundBuilder,
+    void Function(File)? onCameraSaving,
     EntitySaveCallback? onEntitySaving,
   }) async {
     if (enableRecording != true && onlyEnableRecording == true) {
@@ -168,6 +172,7 @@ class CameraPicker extends StatefulWidget {
           resolutionPreset: resolutionPreset,
           imageFormatGroup: imageFormatGroup,
           foregroundBuilder: foregroundBuilder,
+          onCameraSaving: onCameraSaving,
           onEntitySaving: onEntitySaving,
         ),
         transitionCurve: Curves.easeIn,
@@ -728,19 +733,25 @@ class CameraPickerState extends State<CameraPicker>
   Future<void> takePicture() async {
     if (controller.value.isInitialized && !controller.value.isTakingPicture) {
       try {
-        final AssetEntity? entity = await CameraPickerViewer.pushToViewer(
-          context,
-          pickerState: this,
-          pickerType: CameraPickerViewType.image,
-          previewXFile: await controller.takePicture(),
-          theme: theme,
-          shouldDeletePreviewFile: shouldDeletePreviewFile,
-          onEntitySaving: widget.onEntitySaving,
-        );
-        if (entity != null) {
-          Navigator.of(context).pop(entity);
+        if (widget.onCameraSaving != null) {
+          final XFile xFile = await controller.takePicture();
+          widget.onCameraSaving?.call(File(xFile.path));
+          Navigator.of(context).pop();
         } else {
-          safeSetState(() {});
+          final AssetEntity? entity = await CameraPickerViewer.pushToViewer(
+            context,
+            pickerState: this,
+            pickerType: CameraPickerViewType.image,
+            previewXFile: await controller.takePicture(),
+            theme: theme,
+            shouldDeletePreviewFile: shouldDeletePreviewFile,
+            onEntitySaving: widget.onEntitySaving,
+          );
+          if (entity != null) {
+            Navigator.of(context).pop(entity);
+          } else {
+            safeSetState(() {});
+          }
         }
       } catch (e) {
         realDebugPrint('Error when taking pictures: $e');
