@@ -431,6 +431,7 @@ class CameraPickerState extends State<CameraPicker>
         if (shouldPrepareForVideoRecording) {
           await controller.prepareForVideoRecording();
         }
+        await controller.setFlashMode(FlashMode.off);
         // Then call other asynchronous methods.
         await Future.wait(<Future<void>>[
           if (config.lockCaptureOrientation != null)
@@ -482,11 +483,9 @@ class CameraPickerState extends State<CameraPicker>
   Future<void> switchFlashesMode() async {
     switch (controller.value.flashMode) {
       case FlashMode.off:
-        await controller.setFlashMode(FlashMode.auto);
+        await controller.setFlashMode(FlashMode.torch);
         break;
       case FlashMode.auto:
-        await controller.setFlashMode(FlashMode.always);
-        break;
       case FlashMode.always:
       case FlashMode.torch:
         await controller.setFlashMode(FlashMode.off);
