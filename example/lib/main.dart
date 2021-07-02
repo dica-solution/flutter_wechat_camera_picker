@@ -1,7 +1,4 @@
-// Copyright 2019 The FlutterCandies author. All rights reserved.
-// Use of this source code is governed by an Apache license that can be found
-// in the LICENSE file.
-
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 

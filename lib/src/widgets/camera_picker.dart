@@ -646,6 +646,12 @@ class CameraPickerState extends State<CameraPicker>
     if (controller.value.isTakingPicture) {
       return;
     }
+    if (config.onCameraSaving != null) {
+          final XFile xFile = await controller.takePicture();
+          config.onCameraSaving?.call(File(xFile.path));
+          Navigator.of(context).pop();
+        } else {
+        
     try {
       final XFile file = await controller.takePicture();
       // Delay disposing the controller to hold the preview.
@@ -675,7 +681,7 @@ class CameraPickerState extends State<CameraPicker>
     } catch (e) {
       realDebugPrint('Error when preview the captured file: $e');
       handleErrorWithHandler(e, config.onError);
-    }
+    }}
   }
 
   /// When the [shootingButton]'s `onLongPress` called, the [_recordDetectTimer]

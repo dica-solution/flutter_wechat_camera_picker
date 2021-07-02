@@ -2,6 +2,8 @@
 // Use of this source code is governed by an Apache license that can be found
 // in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,6 +37,7 @@ class CameraPickerConfig {
     this.lockCaptureOrientation,
     this.foregroundBuilder,
     this.previewTransformBuilder,
+    this.onCameraSaving,
     this.onEntitySaving,
     this.onError,
     this.onXFileCaptured,
@@ -132,6 +135,8 @@ class CameraPickerConfig {
   /// during captures.
   /// 摄像机在拍摄时锁定的旋转角度
   final DeviceOrientation? lockCaptureOrientation;
+
+  final void Function(File)? onCameraSaving;
 
   /// {@macro wechat_camera_picker.EntitySaveCallback}
   final EntitySaveCallback? onEntitySaving;
