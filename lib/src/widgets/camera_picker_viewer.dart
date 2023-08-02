@@ -330,7 +330,7 @@ class _CameraPickerViewerState extends State<CameraPickerViewer> {
       child: Text(
         Constants.textDelegate.confirm,
         style: TextStyle(
-          color: theme.textTheme.bodyText1?.color,
+          color: theme.textTheme.bodyLarge?.color,
           fontSize: 17.0,
           fontWeight: FontWeight.normal,
         ),

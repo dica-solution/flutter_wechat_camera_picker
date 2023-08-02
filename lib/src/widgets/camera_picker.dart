@@ -284,7 +284,8 @@ class CameraPickerState extends State<CameraPicker>
     /// Hide system status bar automatically when the platform is not Android.
     /// 在非 Android 设备上自动隐藏状态栏
     if (!Platform.isAndroid) {
-      SystemChrome.setEnabledSystemUIOverlays(<SystemUiOverlay>[]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          overlays: <SystemUiOverlay>[]);
     }
 
     initCameras();
@@ -293,7 +294,8 @@ class CameraPickerState extends State<CameraPicker>
   @override
   void dispose() {
     if (!Platform.isAndroid) {
-      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          overlays: SystemUiOverlay.values);
     }
     WidgetsBinding.instance.removeObserver(this);
     _controller?.dispose();
@@ -380,7 +382,8 @@ class CameraPickerState extends State<CameraPicker>
       // time initializing cameras, so available cameras should be fetched.
       if (cameraDescription == null) {
         cameras = (await availableCameras())
-            .where((cam) => cam.lensDirection == CameraLensDirection.back)
+            .where((CameraDescription cam) =>
+                cam.lensDirection == CameraLensDirection.back)
             .toList();
       }
 
@@ -647,41 +650,41 @@ class CameraPickerState extends State<CameraPicker>
       return;
     }
     if (config.onCameraSaving != null) {
-          final XFile xFile = await controller.takePicture();
-          config.onCameraSaving?.call(File(xFile.path));
-          Navigator.of(context).pop();
-        } else {
-        
-    try {
-      final XFile file = await controller.takePicture();
-      // Delay disposing the controller to hold the preview.
-      Future<void>.delayed(const Duration(milliseconds: 500), () {
-        _controller?.dispose();
-        safeSetState(() {
-          _controller = null;
+      final XFile xFile = await controller.takePicture();
+      config.onCameraSaving?.call(File(xFile.path));
+      Navigator.of(context).pop();
+    } else {
+      try {
+        final XFile file = await controller.takePicture();
+        // Delay disposing the controller to hold the preview.
+        Future<void>.delayed(const Duration(milliseconds: 500), () {
+          _controller?.dispose();
+          safeSetState(() {
+            _controller = null;
+          });
         });
-      });
-      final bool? isCapturedFileHandled = config.onXFileCaptured?.call(
-        file,
-        CameraPickerViewType.image,
-      );
-      if (isCapturedFileHandled ?? false) {
-        return;
+        final bool? isCapturedFileHandled = config.onXFileCaptured?.call(
+          file,
+          CameraPickerViewType.image,
+        );
+        if (isCapturedFileHandled ?? false) {
+          return;
+        }
+        final AssetEntity? entity = await _pushToViewer(
+          file: file,
+          viewType: CameraPickerViewType.image,
+        );
+        if (entity != null) {
+          Navigator.of(context).pop(entity);
+          return;
+        }
+        initCameras(currentCamera);
+        safeSetState(() {});
+      } catch (e) {
+        realDebugPrint('Error when preview the captured file: $e');
+        handleErrorWithHandler(e, config.onError);
       }
-      final AssetEntity? entity = await _pushToViewer(
-        file: file,
-        viewType: CameraPickerViewType.image,
-      );
-      if (entity != null) {
-        Navigator.of(context).pop(entity);
-        return;
-      }
-      initCameras(currentCamera);
-      safeSetState(() {});
-    } catch (e) {
-      realDebugPrint('Error when preview the captured file: $e');
-      handleErrorWithHandler(e, config.onError);
-    }}
+    }
   }
 
   /// When the [shootingButton]'s `onLongPress` called, the [_recordDetectTimer]
@@ -723,25 +726,30 @@ class CameraPickerState extends State<CameraPicker>
   /// 设置拍摄文件路径并开始录制视频
   Future<void> startRecordingVideo() async {
     if (!controller.value.isRecordingVideo) {
-      controller.startVideoRecording().then((dynamic _) {
-        safeSetState(() {});
-        if (isRecordingRestricted) {
-          _recordCountdownTimer = Timer(maximumRecordingDuration!, () {
-            stopRecordingVideo();
-          });
-        }
-      }).catchError((Object e) {
+      try {
+        controller.startVideoRecording().then((dynamic _) {
+          safeSetState(() {});
+          if (isRecordingRestricted) {
+            _recordCountdownTimer = Timer(maximumRecordingDuration!, () {
+              stopRecordingVideo();
+            });
+          }
+        });
+      } catch (e) {
         realDebugPrint('Error when start recording video: $e');
         if (controller.value.isRecordingVideo) {
-          controller.stopVideoRecording().catchError((Object e) {
+          try {
+            controller.stopVideoRecording();
+          } catch (e) {
             realDebugPrint(
               'Error when stop recording video after an error start: $e',
             );
             stopRecordingVideo();
-          });
+          }
         }
         handleErrorWithHandler(e, config.onError);
-      });
+        return;
+      }
     }
   }
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -21,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'WeChat Camera Picker Demo',
       theme: ThemeData(
-        brightness: MediaQueryData.fromWindow(ui.window).platformBrightness,
+        brightness: MediaQueryData.fromView(ui.window).platformBrightness,
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
